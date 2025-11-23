@@ -24,6 +24,14 @@ public final class WinningNumbers {
         return WinningRank.of(matchCount, matchBonus);
     }
 
+    public LottoNumbers getWinningNumbers() {
+        return winningNumbers;
+    }
+
+    public LottoNumber getBonusNumber() {
+        return bonusNumber;
+    }
+
     private void validateBonusNumber(final LottoNumbers winningNumbers, final LottoNumber bonusNumber) {
         if (winningNumbers.contains(bonusNumber)) {
             throw new DuplicateBonusNumberException();
@@ -35,10 +43,9 @@ public final class WinningNumbers {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof WinningNumbers)) {
+        if (!(o instanceof WinningNumbers that)) {
             return false;
         }
-        WinningNumbers that = (WinningNumbers) o;
         return Objects.equals(winningNumbers, that.winningNumbers)
                 && Objects.equals(bonusNumber, that.bonusNumber);
     }
@@ -46,13 +53,5 @@ public final class WinningNumbers {
     @Override
     public int hashCode() {
         return Objects.hash(winningNumbers, bonusNumber);
-    }
-
-    @Override
-    public String toString() {
-        return "WinningNumbers{" +
-                "winningNumbers=" + winningNumbers +
-                ", bonusNumber=" + bonusNumber +
-                '}';
     }
 }
