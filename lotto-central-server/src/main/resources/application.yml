@@ -8,6 +8,12 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
+lotto:
+  round:
+    open-duration: 60        # OPEN 유지 시간 (초)
+    closed-duration: 120     # CLOSED 유지 시간 (초)
+    check-interval: 500     # 상태 체크 주기 (밀리초)
+
   jpa:
     hibernate:
       ddl-auto: validate
