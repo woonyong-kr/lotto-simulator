@@ -1,6 +1,6 @@
 package org.woonyong.lotto.core.exception;
 
-import org.woonyong.lotto.core.constant.LottoConstants;
+import static org.woonyong.lotto.core.constant.LottoConstants.*;
 
 public class InvalidLottoNumbersCountException extends LottoException {
     private static final String ERROR_CODE = "INVALID_LOTTO_NUMBERS_COUNT";
@@ -8,7 +8,7 @@ public class InvalidLottoNumbersCountException extends LottoException {
 
     public InvalidLottoNumbersCountException(final int actualCount) {
         super(ERROR_CODE, String.format(MESSAGE_FORMAT,
-                LottoConstants.NUMBERS_COUNT,
+                LOTTO_NUMBERS_COUNT,
                 actualCount));
     }
 }
