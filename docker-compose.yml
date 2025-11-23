@@ -1,0 +1,145 @@
+version: '3.8'
+
+x-cpu-limit: &cpu-limit
+  deploy:
+    resources:
+      limits:
+        cpus: '6'
+
+services:
+  postgres:
+    <<: *cpu-limit
+    image: postgres:16-alpine
+    container_name: ${DB_CONTAINER_NAME}
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT}"
+    volumes:
+      - type: volume
+        source: postgres_data
+        target: /var/lib/postgresql/data
+        volume:
+          nocopy: true
+    networks:
+      - lotto-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  central-server:
+    <<: *cpu-limit
+    build:
+      context: .
+      dockerfile: lotto-central-server/Dockerfile
+    container_name: ${CENTRAL_SERVER_CONTAINER_NAME}
+    ports:
+      - "${CENTRAL_SERVER_PORT}:${CENTRAL_SERVER_PORT}"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - CENTRAL_SERVER_PORT=${CENTRAL_SERVER_PORT}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SSE_UPDATE_INTERVAL=${SSE_UPDATE_INTERVAL}
+      - SSE_HEARTBEAT_INTERVAL=${SSE_HEARTBEAT_INTERVAL}
+      - METRICS_COLLECTION_INTERVAL=${METRICS_COLLECTION_INTERVAL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - lotto-network
+    restart: unless-stopped
+
+  bot-client:
+    <<: *cpu-limit
+    build:
+      context: .
+      dockerfile: lotto-bot-client/Dockerfile
+    container_name: ${BOT_CLIENT_CONTAINER_NAME}
+    ports:
+      - "${BOT_CLIENT_PORT}:${BOT_CLIENT_PORT}"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - BOT_CLIENT_PORT=${BOT_CLIENT_PORT}
+      - CENTRAL_SERVER_URL=http://central-server:${CENTRAL_SERVER_PORT}
+      - BOT_COUNT=${BOT_COUNT}
+      - BOT_DELAY_MS=${BOT_DELAY_MS}
+      - BOT_STRATEGY=${BOT_STRATEGY}
+      - BOT_STATUS_INTERVAL=${BOT_STATUS_INTERVAL}
+    depends_on:
+      pos-terminal:
+        condition: service_started
+    networks:
+      - lotto-network
+    restart: unless-stopped
+
+  pos-manager:
+    <<: *cpu-limit
+    build:
+      context: .
+      dockerfile: lotto-pos-manager/Dockerfile
+    container_name: ${POS_MANAGER_CONTAINER_NAME}
+    ports:
+      - "${POS_MANAGER_PORT}:${POS_MANAGER_PORT}"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - POS_MANAGER_PORT=${POS_MANAGER_PORT}
+      - CENTRAL_SERVER_URL=http://central-server:${CENTRAL_SERVER_PORT}
+      - POS_STATUS_INTERVAL=${POS_STATUS_INTERVAL}
+    depends_on:
+      central-server:
+        condition: service_started
+    networks:
+      - lotto-network
+    restart: unless-stopped
+
+  pos-terminal:
+    <<: *cpu-limit
+    build:
+      context: .
+      dockerfile: lotto-pos-terminal/Dockerfile
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - POS_TERMINAL_PORT=${POS_TERMINAL_PORT}
+      - POS_MANAGER_URL=http://pos-manager:${POS_MANAGER_PORT}
+    depends_on:
+      pos-manager:
+        condition: service_started
+    networks:
+      - lotto-network
+    restart: unless-stopped
+    deploy:
+      replicas: ${POS_TERMINAL_SCALE}
+
+  dashboard:
+    <<: *cpu-limit
+    build:
+      context: .
+      dockerfile: lotto-dashboard/Dockerfile
+    container_name: ${DASHBOARD_CONTAINER_NAME}
+    ports:
+      - "${DASHBOARD_PORT}:${DASHBOARD_PORT}"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - DASHBOARD_PORT=${DASHBOARD_PORT}
+      - CENTRAL_SERVER_URL=http://central-server:${CENTRAL_SERVER_PORT}
+    depends_on:
+      central-server:
+        condition: service_started
+    networks:
+      - lotto-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  lotto-network:
+    driver: bridge

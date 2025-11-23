@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: lotto-pos-terminal
+
+server:
+  port: ${POS_TERMINAL_PORT}
+
+central:
+  server:
+    url: ${CENTRAL_SERVER_URL}
+
+pos:
+  manager:
+    url: ${POS_MANAGER_URL}
+
+logging:
+  level:
+    org.woonyong.lotto: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics

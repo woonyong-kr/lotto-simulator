@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: lotto-dashboard
+  
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+
+server:
+  port: ${DASHBOARD_PORT}
+
+central:
+  server:
+    url: ${CENTRAL_SERVER_URL}
+    
+logging:
+  level:
+    org.woonyong.lotto: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics

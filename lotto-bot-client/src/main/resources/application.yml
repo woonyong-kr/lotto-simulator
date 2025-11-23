@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: lotto-bot-client
+    
+server:
+  port: ${BOT_CLIENT_PORT}
+  
+central:
+  server:
+    url: ${CENTRAL_SERVER_URL}
+    
+bot:
+  config:
+    count: ${BOT_COUNT}
+    delay-ms: ${BOT_DELAY_MS}
+    strategy: ${BOT_STRATEGY}
+  
+logging:
+  level:
+    org.woonyong.lotto: DEBUG
+    
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
