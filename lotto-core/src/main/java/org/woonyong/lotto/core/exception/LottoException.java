@@ -6,12 +6,12 @@ import lombok.Getter;
 public class LottoException extends RuntimeException {
     private final String errorCode;
 
-    public LottoException(String errorCode, String message) {
+    public LottoException(final String errorCode, final String message) {
         super(message);
         this.errorCode = errorCode;
     }
 
-    public static LottoException of(String errorCode, String message) {
+    public static LottoException of(final String errorCode, final String message) {
         return new LottoException(errorCode, message);
     }
 }

@@ -15,7 +15,7 @@ public final class LottoNumberGenerator {
         return generateRandomNumbers(1).getFirst();
     }
 
-    public static List<List<Integer>> generateRandomNumbers(int count) {
+    public static List<List<Integer>> generateRandomNumbers(final int count) {
         List<List<Integer>> tickets = new ArrayList<>();
         List<Integer> baseNumbers = createBaseNumbers();
         long seed = createSeed();
@@ -36,7 +36,7 @@ public final class LottoNumberGenerator {
                 .collect(Collectors.toList());
     }
 
-    private static List<Integer> generateSingleTicket(List<Integer> numbers, long seed) {
+    private static List<Integer> generateSingleTicket(final List<Integer> numbers, final long seed) {
         Collections.shuffle(numbers, new Random(seed));
         return numbers.stream()
                 .limit(LottoConstants.NUMBERS_COUNT)
@@ -48,11 +48,11 @@ public final class LottoNumberGenerator {
         return createSeed(System.nanoTime());
     }
 
-    private static long createSeed(long previousSeed) {
+    private static long createSeed(final long previousSeed) {
         return createSeed(createSeed(), previousSeed);
     }
 
-    private static long createSeed(long seed, long salt) {
+    private static long createSeed(final long seed, final long salt) {
         return ((seed >>> 32) ^ (seed & 0xFFFFFFFFL)) ^ salt;
     }
 

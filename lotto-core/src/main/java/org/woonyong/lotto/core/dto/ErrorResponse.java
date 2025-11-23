@@ -9,7 +9,7 @@ public class ErrorResponse {
     private final String code;
     private final String message;
 
-    public static ErrorResponse of(String code, String message) {
+    public static ErrorResponse of(final String code, final String message) {
         return ErrorResponse.builder()
                 .code(code)
                 .message(message)
