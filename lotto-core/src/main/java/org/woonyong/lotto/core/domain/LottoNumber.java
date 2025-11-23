@@ -2,31 +2,51 @@ package org.woonyong.lotto.core.domain;
 
 import org.woonyong.lotto.core.constant.LottoConstants;
 import org.woonyong.lotto.core.exception.InvalidLottoNumberException;
+import org.woonyong.lotto.core.util.LottoNumberGenerator;
 
+import java.util.List;
 import java.util.Objects;
 
-public final class LottoNumber implements Comparable<LottoNumber> {
-    private final int value;
+public final class LottoNumber {
+    private final int number;
 
     public static LottoNumber of(final int value) {
         return new LottoNumber(value);
     }
 
+    public static LottoNumber generateRandom() {
+        return of(LottoNumberGenerator.generateRandomNumber());
+    }
+
+    public static LottoNumber generateRandom(final int excludeNumber) {
+        return of(LottoNumberGenerator.generateRandomNumber(excludeNumber));
+    }
+
+    public static LottoNumber generateRandom(final List<Integer> excludeNumbers) {
+        return of(LottoNumberGenerator.generateRandomNumber(excludeNumbers));
+    }
+
+    public static LottoNumber generateRandom(LottoNumber excludeNumber) {
+        return of(LottoNumberGenerator.generateRandomNumber(excludeNumber.getNumber()));
+    }
+
+    public static LottoNumber generateRandom(LottoNumbers excludeNumbers) {
+        List<Integer> excludeValues = excludeNumbers.getNumbers().stream()
+                .map(LottoNumber::getNumber)
+                .toList();
+        return of(LottoNumberGenerator.generateRandomNumber(excludeValues));
+    }
+
     private LottoNumber(final int value) {
-        validateRange(value);
-        this.value = value;
+        validate(value);
+        this.number = value;
     }
 
-    public int getValue() {
-        return value;
+    public int getNumber() {
+        return number;
     }
 
-    @Override
-    public int compareTo(final LottoNumber other) {
-        return Integer.compare(this.value, other.value);
-    }
-
-    private void validateRange(final int value) {
+    private void validate(final int value) {
         if (value < LottoConstants.MIN_NUMBER || value > LottoConstants.MAX_NUMBER) {
             throw new InvalidLottoNumberException(value);
         }
@@ -37,20 +57,14 @@ public final class LottoNumber implements Comparable<LottoNumber> {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof LottoNumber)) {
+        if (!(o instanceof LottoNumber that)) {
             return false;
         }
-        LottoNumber that = (LottoNumber) o;
-        return value == that.value;
+        return number == that.number;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(value);
-    }
-
-    @Override
-    public String toString() {
-        return String.valueOf(value);
+        return Objects.hash(number);
     }
 }

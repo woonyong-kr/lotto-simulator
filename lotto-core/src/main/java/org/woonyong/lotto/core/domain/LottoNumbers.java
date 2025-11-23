@@ -1,34 +1,49 @@
 package org.woonyong.lotto.core.domain;
 
 import org.woonyong.lotto.core.constant.LottoConstants;
-import org.woonyong.lotto.core.exception.InvalidLottoNumbersCountException;
 import org.woonyong.lotto.core.exception.DuplicateLottoNumberException;
+import org.woonyong.lotto.core.exception.InvalidLottoNumbersCountException;
+import org.woonyong.lotto.core.util.LottoNumberGenerator;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public final class LottoNumbers {
     private final List<LottoNumber> numbers;
 
-    public static LottoNumbers of(final List<LottoNumber> numbers) {
-        return new LottoNumbers(numbers);
+    public static LottoNumbers from(final List<Integer> values) {
+        List<LottoNumber> lottoNumbers = values.stream()
+                .map(LottoNumber::of)
+                .toList();
+        return new LottoNumbers(lottoNumbers);
     }
 
-    public static LottoNumbers from(final List<Integer> values) {
-        List<LottoNumber> numbers = values.stream()
-                .map(LottoNumber::of)
-                .collect(Collectors.toList());
-        return new LottoNumbers(numbers);
+    public static LottoNumbers generateRandom() {
+        return from(LottoNumberGenerator.generateRandomNumbers());
+    }
+
+    public static LottoNumbers generateRandom(final int excludeNumber) {
+        return from(LottoNumberGenerator.generateRandomNumbers(excludeNumber));
+    }
+
+    public static LottoNumbers generateRandom(final List<Integer> excludeNumbers) {
+        return from(LottoNumberGenerator.generateRandomNumbers(excludeNumbers));
+    }
+
+    public static LottoNumbers generateRandom(LottoNumber excludeNumber) {
+        return from(LottoNumberGenerator.generateRandomNumbers(excludeNumber.getNumber()));
+    }
+
+    public static LottoNumbers generateRandom(LottoNumbers excludeNumbers) {
+        List<Integer> excludeValues = excludeNumbers.getNumbers().stream()
+                .map(LottoNumber::getNumber)
+                .toList();
+        return from(LottoNumberGenerator.generateRandomNumbers(excludeValues));
     }
 
     private LottoNumbers(final List<LottoNumber> numbers) {
         validateCount(numbers);
         validateDuplicate(numbers);
-        this.numbers = sortAndMakeUnmodifiable(numbers);
-    }
-
-    public List<LottoNumber> getNumbers() {
-        return numbers;
+        this.numbers = new ArrayList<>(numbers);
     }
 
     public boolean contains(final LottoNumber number) {
@@ -36,13 +51,17 @@ public final class LottoNumbers {
     }
 
     public int countMatches(final LottoNumbers other) {
-        return (int) this.numbers.stream()
-                .filter(other.numbers::contains)
+        return (int) numbers.stream()
+                .filter(other::contains)
                 .count();
     }
 
+    public List<LottoNumber> getNumbers() {
+        return new ArrayList<>(numbers);
+    }
+
     private void validateCount(final List<LottoNumber> numbers) {
-        if (numbers.size() != LottoConstants.NUMBERS_COUNT) {
+        if (numbers.size() != LottoConstants.LOTTO_NUMBERS_COUNT) {
             throw new InvalidLottoNumbersCountException(numbers.size());
         }
     }
@@ -54,34 +73,19 @@ public final class LottoNumbers {
         }
     }
 
-    private List<LottoNumber> sortAndMakeUnmodifiable(final List<LottoNumber> numbers) {
-        return numbers.stream()
-                .sorted()
-                .collect(Collectors.collectingAndThen(
-                        Collectors.toList(),
-                        Collections::unmodifiableList
-                ));
-    }
-
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof LottoNumbers)) {
+        if (!(o instanceof LottoNumbers that)) {
             return false;
         }
-        LottoNumbers that = (LottoNumbers) o;
         return Objects.equals(numbers, that.numbers);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(numbers);
-    }
-
-    @Override
-    public String toString() {
-        return numbers.toString();
     }
 }

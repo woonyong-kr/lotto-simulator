@@ -1,6 +1,6 @@
 package org.woonyong.lotto.core.util;
 
-import org.woonyong.lotto.core.constant.LottoConstants;
+import static org.woonyong.lotto.core.constant.LottoConstants.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,34 +12,46 @@ import java.util.stream.IntStream;
 public final class LottoNumberGenerator {
 
     public static List<Integer> generateRandomNumbers() {
-        return generateRandomNumbers(1).getFirst();
+        return generateRandomNumbers(Collections.emptyList(), LOTTO_NUMBERS_COUNT);
     }
 
-    public static List<List<Integer>> generateRandomNumbers(final int count) {
-        List<List<Integer>> tickets = new ArrayList<>();
-        List<Integer> baseNumbers = createBaseNumbers();
-        long seed = createSeed();
-
-        for (int i = 0; i < count; i++) {
-            tickets.add(generateSingleTicket(new ArrayList<>(baseNumbers), seed));
-            seed = createSeed(seed);
-        }
-
-        return tickets;
+    public static List<Integer> generateRandomNumbers(final int excludeNumber) {
+        return generateRandomNumbers(List.of(excludeNumber), LOTTO_NUMBERS_COUNT);
     }
 
-    private static List<Integer> createBaseNumbers() {
-        return IntStream.rangeClosed(
-                        LottoConstants.MIN_NUMBER,
-                        LottoConstants.MAX_NUMBER)
+    public static List<Integer> generateRandomNumbers(final List<Integer> excludeNumbers) {
+        return generateRandomNumbers(excludeNumbers, LOTTO_NUMBERS_COUNT);
+    }
+
+    public static int generateRandomNumber() {
+        return generateRandomNumbers(Collections.emptyList(), 1).getFirst();
+    }
+
+    public static int generateRandomNumber(final int excludeNumber) {
+        return generateRandomNumbers(List.of(excludeNumber), 1).getFirst();
+    }
+
+    public static int generateRandomNumber(final List<Integer> excludeNumbers) {
+        return generateRandomNumbers(excludeNumbers, 1).getFirst();
+    }
+
+    private static List<Integer> generateRandomNumbers(final List<Integer> excludeNumbers, final int count) {
+        List<Integer> availableNumbers = createAvailableNumbers(excludeNumbers);
+        return generateFromAvailableNumbers(availableNumbers, count);
+    }
+
+    private static List<Integer> createAvailableNumbers(final List<Integer> excludeNumbers) {
+        return IntStream.rangeClosed(MIN_NUMBER, MAX_NUMBER)
+                .filter(number -> !excludeNumbers.contains(number))
                 .boxed()
                 .collect(Collectors.toList());
     }
 
-    private static List<Integer> generateSingleTicket(final List<Integer> numbers, final long seed) {
-        Collections.shuffle(numbers, new Random(seed));
-        return numbers.stream()
-                .limit(LottoConstants.NUMBERS_COUNT)
+    private static List<Integer> generateFromAvailableNumbers(final List<Integer> availableNumbers, final int count) {
+        long seed = createSeed();
+        Collections.shuffle(availableNumbers, new Random(seed));
+        return availableNumbers.stream()
+                .limit(count)
                 .sorted()
                 .collect(Collectors.toList());
     }
