@@ -1,47 +1,71 @@
 plugins {
     id("org.springframework.boot") version "3.4.0" apply false
-    id("io.spring.dependency-management") version "1.1.6" apply false
+    id("io.spring.dependency-management") version "1.1.4" apply false
 }
 
+group = "org.woonyong"
+version = "1.0.0"
+
 allprojects {
-    group = "org.woonyong"
-    version = "0.0.1"
+    repositories {
+        mavenCentral()
+    }
 }
 
 subprojects {
     apply(plugin = "java")
-    apply(plugin = "org.springframework.boot")
-    apply(plugin = "io.spring.dependency-management")
 
     configure<JavaPluginExtension> {
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(21)
-        }
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
-
-    dependencies {
-        // Common dependencies for all modules
-        add("implementation", "org.springframework.boot:spring-boot-starter")
-        add("implementation", "org.springframework.boot:spring-boot-starter-actuator")
-        add("implementation", "org.springframework.boot:spring-boot-starter-validation")
-
-        add("developmentOnly", "org.springframework.boot:spring-boot-devtools")
-        add("compileOnly", "org.projectlombok:lombok")
-        add("annotationProcessor", "org.projectlombok:lombok")
-
-        add("testImplementation", "org.springframework.boot:spring-boot-starter-test")
-        add("testRuntimeOnly", "org.junit.platform:junit-platform-launcher")
+    
+    tasks.withType<JavaCompile> {
+        options.encoding = "UTF-8"
+        options.compilerArgs.addAll(listOf(
+            "-parameters",
+            "-Xlint:unchecked",
+            "-Xlint:deprecation"
+        ))
     }
-
+    
     tasks.withType<Test> {
         useJUnitPlatform()
     }
-
-    tasks.withType<JavaCompile> {
-        options.encoding = "UTF-8"
-    }
-
-    tasks.withType<org.springframework.boot.gradle.tasks.run.BootRun> {
-        workingDir = rootProject.projectDir
+    
+    dependencies {
+        val lombokVersion = "1.18.30"
+        val junitVersion = "5.10.1"
+        val assertjVersion = "3.24.2"
+        
+        "compileOnly"("org.projectlombok:lombok:$lombokVersion")
+        "annotationProcessor"("org.projectlombok:lombok:$lombokVersion")
+        
+        "testImplementation"("org.junit.jupiter:junit-jupiter:$junitVersion")
+        "testImplementation"("org.assertj:assertj-core:$assertjVersion")
+        "testCompileOnly"("org.projectlombok:lombok:$lombokVersion")
+        "testAnnotationProcessor"("org.projectlombok:lombok:$lombokVersion")
     }
 }
+
+configure(subprojects.filter { it.name != "lotto-core" }) {
+    apply(plugin = "org.springframework.boot")
+    apply(plugin = "io.spring.dependency-management")
+    
+    dependencies {
+        "implementation"(project(":lotto-core"))
+        
+        "implementation"("org.springframework.boot:spring-boot-starter-web")
+        "implementation"("org.springframework.boot:spring-boot-starter-validation")
+        
+        "testImplementation"("org.springframework.boot:spring-boot-starter-test")
+    }
+}
+
+project(":lotto-central-server") {
+    dependencies {
+        "implementation"("org.springframework.boot:spring-boot-starter-data-jpa")
+        "runtimeOnly"("org.postgresql:postgresql")
+    }
+}
+
