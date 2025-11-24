@@ -16,20 +16,20 @@ public class Round {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "round_number", nullable = false, unique = true)
     private Integer roundNumber;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false, length = 20)
     private RoundStatus status;
 
-    @Column(nullable = false)
+    @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
-    @Column(nullable = false)
+    @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
-    @Column(nullable = false)
+    @Column(name = "drawing_completed", nullable = false)
     private Boolean drawingCompleted;
 
     protected Round() {
