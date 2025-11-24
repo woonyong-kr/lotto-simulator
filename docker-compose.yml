@@ -16,7 +16,7 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "${DB_PORT}"
+      - "${DB_PORT}:5432"
     volumes:
       - type: volume
         source: postgres_data
@@ -47,6 +47,7 @@ services:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
+      - JPA_DDL_AUTO=${JPA_DDL_AUTO}
       - SSE_UPDATE_INTERVAL=${SSE_UPDATE_INTERVAL}
       - SSE_HEARTBEAT_INTERVAL=${SSE_HEARTBEAT_INTERVAL}
       - METRICS_COLLECTION_INTERVAL=${METRICS_COLLECTION_INTERVAL}
