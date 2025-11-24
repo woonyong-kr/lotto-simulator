@@ -2,41 +2,30 @@ spring:
   application:
     name: lotto-bot-client
 
-server:
-  port: ${BOT_CLIENT_PORT:8280}
-
-central:
-  server:
-    url: ${CENTRAL_SERVER_URL:http://localhost:8100}
-
-pos:
-  manager:
-    url: ${POS_MANAGER_URL:http://localhost:8300}
-
 bot:
-  client:
-    id: ${BOT_CLIENT_ID:BOT-001}
-  max-capacity: ${BOT_MAX_CAPACITY:12}
-  default-purchase-interval-ms: ${BOT_DEFAULT_PURCHASE_INTERVAL_MS:1000}
-  default-tickets-per-purchase: ${BOT_DEFAULT_TICKETS_PER_PURCHASE:1}
-  default-pos-count: ${BOT_DEFAULT_POS_COUNT:3}
-  pos-failure-threshold: ${BOT_POS_FAILURE_THRESHOLD:5}
-  health-check-interval-ms: ${BOT_HEALTH_CHECK_INTERVAL_MS:5000}
-  sse-interval-ms: ${BOT_SSE_INTERVAL_MS:500}
-  pos-reallocation-retry-ms: ${BOT_POS_REALLOCATION_RETRY_MS:60000}
-  pos-allocation-max-retry: ${BOT_POS_ALLOCATION_MAX_RETRY:5}
-  dashboard-report-interval-ms: ${BOT_DASHBOARD_REPORT_INTERVAL_MS:500}
+  max-capacity: ${BOT_MAX_CAPACITY}
+  default-purchase-interval-ms: ${BOT_DEFAULT_PURCHASE_INTERVAL_MS}
+  default-tickets-per-purchase: ${BOT_DEFAULT_TICKETS_PER_PURCHASE}
+  default-pos-count: ${BOT_DEFAULT_POS_COUNT}
+  pos-failure-threshold: ${BOT_POS_FAILURE_THRESHOLD}
+  health-check-interval-ms: ${BOT_HEALTH_CHECK_INTERVAL_MS}
+  sse-interval-ms: ${BOT_SSE_INTERVAL_MS}
+  pos-reallocation-retry-ms: ${BOT_POS_REALLOCATION_RETRY_MS}
+  pos-allocation-max-retry: ${BOT_POS_ALLOCATION_MAX_RETRY}
+  dashboard-report-interval-ms: ${BOT_DASHBOARD_REPORT_INTERVAL_MS}
+  central-server-url: ${CENTRAL_SERVER_URL}
+  pos-manager-url: ${POS_MANAGER_URL}
+  dashboard-server-url: ${DASHBOARD_URL}
 
-dashboard:
-  server:
-    url: ${DASHBOARD_SERVER_URL:http://localhost:8500}
-
-logging:
-  level:
-    org.woonyong.lotto: DEBUG
+server:
+  port: ${BOT_CLIENT_PORT}
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info,metrics
+
+logging:
+  level:
+    org.woonyong.lotto: DEBUG

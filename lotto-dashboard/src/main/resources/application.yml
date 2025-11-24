@@ -1,14 +1,11 @@
 spring:
   application:
     name: lotto-dashboard
-  
+
   thymeleaf:
     cache: false
     prefix: classpath:/templates/
     suffix: .html
-
-server:
-  port: ${DASHBOARD_PORT:8500}
 
 central:
   server:
@@ -16,13 +13,16 @@ central:
 
 dashboard:
   api-base-url: ${DASHBOARD_URL}
-    
-logging:
-  level:
-    org.woonyong.lotto: DEBUG
+
+server:
+  port: ${DASHBOARD_PORT}
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info,metrics
+
+logging:
+  level:
+    org.woonyong.lotto: DEBUG

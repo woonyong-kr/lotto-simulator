@@ -25,6 +25,11 @@ lotto:
     check-interval: ${LOTTO_ROUND_CHECK_INTERVAL}
     sse-interval: 500
 
+central:
+  server:
+    dashboard-url: ${DASHBOARD_URL}
+    default-pos-count: ${BOT_DEFAULT_POS_COUNT}
+
 server:
   port: ${CENTRAL_SERVER_PORT}
 

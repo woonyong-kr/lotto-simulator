@@ -2,9 +2,6 @@ spring:
   application:
     name: lotto-pos-manager
 
-server:
-  port: ${POS_MANAGER_PORT}
-
 central:
   server:
     url: ${CENTRAL_SERVER_URL}
@@ -15,6 +12,10 @@ pos:
     health-check-interval-ms: ${POS_MANAGER_HEALTH_CHECK_INTERVAL_MS}
     read-timeout: ${POS_MANAGER_READ_TIMEOUT}
     sse-interval-ms: ${SSE_UPDATE_INTERVAL}
+    dashboard-url: ${DASHBOARD_URL}
+
+server:
+  port: ${POS_MANAGER_PORT}
 
 logging:
   level:
