@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
+@Table(name = "rounds")
 public class Round {
     private static final String ERROR_DRAWING_NOT_COMPLETED = "집계가 완료되지 않아 시간을 변경할 수 없습니다";
     private static final String ERROR_INVALID_STATUS_FOR_CLOSE = "OPEN 상태에서만 CLOSED로 전환 가능합니다";

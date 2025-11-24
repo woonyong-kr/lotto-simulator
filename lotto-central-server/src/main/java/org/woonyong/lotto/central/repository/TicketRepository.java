@@ -1,12 +1,14 @@
 package org.woonyong.lotto.central.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 import org.woonyong.lotto.central.entity.Ticket;
 import org.woonyong.lotto.core.domain.TicketStatus;
 
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
     Optional<Ticket> findByTicketNumber(String ticketNumber);

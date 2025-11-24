@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Entity
+@Table(name = "tickets")
 public class Ticket {
     private static final String ERROR_CANNOT_CANCEL = "취소할 수 없는 티켓입니다.";
     private static final String ERROR_CANNOT_CHECK_WINNING = "발행된 티켓만 당첨 확인이 가능합니다.";

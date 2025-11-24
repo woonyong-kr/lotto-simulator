@@ -1,22 +1,19 @@
 package org.woonyong.lotto.central.config;
 
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.woonyong.lotto.central.service.RoundService;
 
-@Component
-public class RoundInitializer implements ApplicationRunner {
-    private final RoundService roundService;
+@Configuration
+public class RoundInitializer {
 
-    public RoundInitializer(final RoundService roundService) {
-        this.roundService = roundService;
-    }
-
-    @Override
-    public void run(final ApplicationArguments args) {
-        if (roundService.getCurrentRound().isEmpty()) {
-            roundService.startFirstRound();
-        }
+    @Bean
+    public CommandLineRunner initializeRound(final RoundService roundService) {
+        return args -> {
+            if (roundService.getCurrentRound().isEmpty()) {
+                roundService.startFirstRound();
+            }
+        };
     }
 }

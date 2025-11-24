@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Entity
+@Table(name = "winning_numbers")
 public class WinningNumber {
     private static final String NUMBER_DELIMITER = ",";
 
