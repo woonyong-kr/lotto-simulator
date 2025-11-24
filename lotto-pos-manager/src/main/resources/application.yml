@@ -9,6 +9,13 @@ central:
   server:
     url: ${CENTRAL_SERVER_URL}
 
+pos:
+  manager:
+    max-terminal-capacity: ${POS_MANAGER_MAX_TERMINAL_CAPACITY}
+    health-check-interval-ms: ${POS_MANAGER_HEALTH_CHECK_INTERVAL_MS}
+    read-timeout: ${POS_MANAGER_READ_TIMEOUT}
+    sse-interval-ms: ${SSE_UPDATE_INTERVAL}
+
 logging:
   level:
     root: INFO

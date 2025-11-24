@@ -8,11 +8,14 @@ spring:
     suffix: .html
 
 server:
-  port: ${DASHBOARD_PORT}
+  port: ${DASHBOARD_PORT:8500}
 
 central:
   server:
     url: ${CENTRAL_SERVER_URL}
+
+dashboard:
+  api-base-url: ${DASHBOARD_URL}
     
 logging:
   level:

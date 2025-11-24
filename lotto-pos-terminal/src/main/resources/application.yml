@@ -5,13 +5,15 @@ spring:
 server:
   port: ${POS_TERMINAL_PORT}
 
-central:
-  server:
-    url: ${CENTRAL_SERVER_URL}
-
 pos:
-  manager:
-    url: ${POS_MANAGER_URL}
+  terminal:
+    central-server-url: ${CENTRAL_SERVER_URL}
+    pos-manager-url: ${POS_MANAGER_URL}
+    statistics-report-interval: ${STATISTICS_REPORT_INTERVAL_MS}
+    connection-timeout: ${CONNECTION_TIMEOUT_MS}
+    read-timeout: ${READ_TIMEOUT_MS}
+    health-check-interval-ms: ${HEALTH_CHECK_INTERVAL_MS}
+    owner-validation-failure-threshold: ${OWNER_VALIDATION_FAILURE_THRESHOLD}
 
 logging:
   level:
