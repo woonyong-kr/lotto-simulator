@@ -1,6 +1,7 @@
 package org.woonyong.lotto.central.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.woonyong.lotto.central.entity.Ticket;
 import org.woonyong.lotto.core.domain.TicketStatus;
@@ -20,4 +21,11 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     List<Ticket> findByRoundIdAndStatus(Long roundId, TicketStatus status);
 
     long countByRoundId(Long roundId);
+
+    long countByRoundIdAndStatus(Long roundId, TicketStatus status);
+
+    long countByRoundIdAndWinningRank(Long roundId, Integer winningRank);
+
+    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.winningRank = 1")
+    long countFirstPrizeWinners();
 }

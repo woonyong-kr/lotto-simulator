@@ -10,6 +10,7 @@ public class TicketResponse {
     private final Long id;
     private final String ticketNumber;
     private final Long roundId;
+    private final String posUid;
     private final String numbers;
     private final TicketType type;
     private final TicketStatus status;
@@ -20,6 +21,7 @@ public class TicketResponse {
     private TicketResponse(final Long id,
                            final String ticketNumber,
                            final Long roundId,
+                           final String posUid,
                            final String numbers,
                            final TicketType type,
                            final TicketStatus status,
@@ -29,6 +31,7 @@ public class TicketResponse {
         this.id = id;
         this.ticketNumber = ticketNumber;
         this.roundId = roundId;
+        this.posUid = posUid;
         this.numbers = numbers;
         this.type = type;
         this.status = status;
@@ -42,6 +45,7 @@ public class TicketResponse {
                 ticket.getId(),
                 ticket.getTicketNumber(),
                 ticket.getRoundId(),
+                ticket.getPosUid(),
                 ticket.getNumbers(),
                 ticket.getType(),
                 ticket.getStatus(),
@@ -61,6 +65,10 @@ public class TicketResponse {
 
     public Long getRoundId() {
         return roundId;
+    }
+
+    public String getPosUid() {
+        return posUid;
     }
 
     public String getNumbers() {

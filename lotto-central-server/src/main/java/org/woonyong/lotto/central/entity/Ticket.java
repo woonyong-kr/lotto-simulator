@@ -1,6 +1,7 @@
 package org.woonyong.lotto.central.entity;
 
 import jakarta.persistence.*;
+import org.woonyong.lotto.core.constant.LottoConstants;
 import org.woonyong.lotto.core.domain.*;
 
 import java.time.LocalDateTime;
@@ -20,39 +21,52 @@ public class Ticket {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(name = "ticket_number", nullable = false, unique = true, length = 50)
     private String ticketNumber;
 
-    @Column(nullable = false)
+    @Column(name = "round_id", nullable = false)
     private Long roundId;
 
-    @Column(nullable = false, length = 50)
+    @Column(name = "pos_uid", length = 10)
+    private String posUid;
+
+    @Column(name = "numbers", nullable = false, length = 50)
     private String numbers;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(name = "type", nullable = false, length = 20)
     private TicketType type;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(name = "status", nullable = false, length = 20)
     private TicketStatus status;
 
+    @Column(name = "winning_rank")
     private Integer winningRank;
 
+    @Column(name = "winning_amount")
     private Integer winningAmount;
 
-    @Column(nullable = false)
+    @Column(name = "purchase_time", nullable = false)
     private LocalDateTime purchaseTime;
 
     protected Ticket() {
     }
 
-    public static Ticket createManual(final Long roundId, final LottoNumbers lottoNumbers) {
-        return create(roundId, lottoNumbers, TicketType.MANUAL);
+    public static Ticket createManual(
+            final Long roundId,
+            final LottoNumbers lottoNumbers,
+            final String posUid
+    ) {
+        return create(roundId, lottoNumbers, TicketType.MANUAL, posUid);
     }
 
-    public static Ticket createAuto(final Long roundId, final LottoNumbers lottoNumbers) {
-        return create(roundId, lottoNumbers, TicketType.AUTO);
+    public static Ticket createAuto(
+            final Long roundId,
+            final LottoNumbers lottoNumbers,
+            final String posUid
+    ) {
+        return create(roundId, lottoNumbers, TicketType.AUTO, posUid);
     }
 
     public void checkWinning(final WinningNumbers winningNumbers) {
@@ -83,6 +97,10 @@ public class Ticket {
         return roundId;
     }
 
+    public String getPosUid() {
+        return posUid;
+    }
+
     public String getNumbers() {
         return numbers;
     }
@@ -107,10 +125,16 @@ public class Ticket {
         return purchaseTime;
     }
 
-    private static Ticket create(final Long roundId, final LottoNumbers lottoNumbers, final TicketType type) {
+    private static Ticket create(
+            final Long roundId,
+            final LottoNumbers lottoNumbers,
+            final TicketType type,
+            final String posUid
+    ) {
         Ticket ticket = new Ticket();
         ticket.ticketNumber = TicketNumber.generate().getValue();
         ticket.roundId = roundId;
+        ticket.posUid = posUid;
         ticket.numbers = convertToString(lottoNumbers);
         ticket.type = type;
         ticket.status = TicketStatus.ISSUED;
@@ -133,8 +157,18 @@ public class Ticket {
     }
 
     private void applyWinningResult(final WinningRank rank) {
-        this.winningRank = rank.getMatchCount();
-        this.winningAmount = rank.getPrizeMoney();
+        this.winningRank = rank.getRank();
+        this.winningAmount = calculatePrize(rank);
+    }
+
+    private int calculatePrize(final WinningRank rank) {
+        if (rank == WinningRank.FOURTH) {
+            return LottoConstants.FOURTH_PRIZE;
+        }
+        if (rank == WinningRank.FIFTH) {
+            return LottoConstants.FIFTH_PRIZE;
+        }
+        return 0;
     }
 
     private void validateCanCheckWinning() {
