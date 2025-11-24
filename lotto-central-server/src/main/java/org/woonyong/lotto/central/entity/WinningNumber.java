@@ -19,13 +19,13 @@ public class WinningNumber {
     @Id
     private Long roundId;
 
-    @Column(nullable = false, length = 50)
+    @Column(name = "numbers", nullable = false, length = 50)
     private String numbers;
 
-    @Column(nullable = false)
+    @Column(name = "bonus_number", nullable = false)
     private Integer bonusNumber;
 
-    @Column(nullable = false)
+    @Column(name = "drawn_at", nullable = false)
     private LocalDateTime drawnAt;
 
     protected WinningNumber() {
