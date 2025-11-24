@@ -1,94 +1,90 @@
 package org.woonyong.lotto.central.entity;
 
 import jakarta.persistence.*;
-import org.woonyong.lotto.core.domain.LottoNumber;
-import org.woonyong.lotto.core.domain.LottoNumbers;
-import org.woonyong.lotto.core.domain.WinningNumbers;
-
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.woonyong.lotto.core.domain.LottoNumber;
+import org.woonyong.lotto.core.domain.LottoNumbers;
+import org.woonyong.lotto.core.domain.WinningNumbers;
 
 @Entity
 @Table(name = "winning_numbers")
 public class WinningNumber {
-    private static final String NUMBER_DELIMITER = ",";
+  private static final String NUMBER_DELIMITER = ",";
 
-    @Id
-    private Long roundId;
+  @Id private Long roundId;
 
-    @Column(name = "numbers", nullable = false, length = 50)
-    private String numbers;
+  @Column(name = "numbers", nullable = false, length = 50)
+  private String numbers;
 
-    @Column(name = "bonus_number", nullable = false)
-    private Integer bonusNumber;
+  @Column(name = "bonus_number", nullable = false)
+  private Integer bonusNumber;
 
-    @Column(name = "drawn_at", nullable = false)
-    private LocalDateTime drawnAt;
+  @Column(name = "drawn_at", nullable = false)
+  private LocalDateTime drawnAt;
 
-    protected WinningNumber() {
+  protected WinningNumber() {}
+
+  public static WinningNumber create(final Long roundId, final WinningNumbers winningNumbers) {
+    WinningNumber winningNumber = new WinningNumber();
+    winningNumber.roundId = roundId;
+    winningNumber.numbers = convertToString(winningNumbers.getWinningNumbers());
+    winningNumber.bonusNumber = winningNumbers.getBonusNumber().getNumber();
+    winningNumber.drawnAt = LocalDateTime.now();
+    return winningNumber;
+  }
+
+  public WinningNumbers toWinningNumbers() {
+    LottoNumbers lottoNumbers = convertToLottoNumbers();
+    LottoNumber bonus = LottoNumber.of(bonusNumber);
+    return WinningNumbers.of(lottoNumbers, bonus);
+  }
+
+  public Long getRoundId() {
+    return roundId;
+  }
+
+  public String getNumbers() {
+    return numbers;
+  }
+
+  public Integer getBonusNumber() {
+    return bonusNumber;
+  }
+
+  public LocalDateTime getDrawnAt() {
+    return drawnAt;
+  }
+
+  private static String convertToString(final LottoNumbers lottoNumbers) {
+    return lottoNumbers.getNumbers().stream()
+        .map(LottoNumber::getNumber)
+        .map(String::valueOf)
+        .collect(Collectors.joining(NUMBER_DELIMITER));
+  }
+
+  private LottoNumbers convertToLottoNumbers() {
+    List<Integer> numberList =
+        Arrays.stream(numbers.split(NUMBER_DELIMITER)).map(Integer::parseInt).toList();
+    return LottoNumbers.from(numberList);
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
     }
-
-    public static WinningNumber create(final Long roundId, final WinningNumbers winningNumbers) {
-        WinningNumber winningNumber = new WinningNumber();
-        winningNumber.roundId = roundId;
-        winningNumber.numbers = convertToString(winningNumbers.getWinningNumbers());
-        winningNumber.bonusNumber = winningNumbers.getBonusNumber().getNumber();
-        winningNumber.drawnAt = LocalDateTime.now();
-        return winningNumber;
+    if (!(o instanceof WinningNumber that)) {
+      return false;
     }
+    return Objects.equals(roundId, that.roundId);
+  }
 
-    public WinningNumbers toWinningNumbers() {
-        LottoNumbers lottoNumbers = convertToLottoNumbers();
-        LottoNumber bonus = LottoNumber.of(bonusNumber);
-        return WinningNumbers.of(lottoNumbers, bonus);
-    }
-
-    public Long getRoundId() {
-        return roundId;
-    }
-
-    public String getNumbers() {
-        return numbers;
-    }
-
-    public Integer getBonusNumber() {
-        return bonusNumber;
-    }
-
-    public LocalDateTime getDrawnAt() {
-        return drawnAt;
-    }
-
-    private static String convertToString(final LottoNumbers lottoNumbers) {
-        return lottoNumbers.getNumbers().stream()
-                .map(LottoNumber::getNumber)
-                .map(String::valueOf)
-                .collect(Collectors.joining(NUMBER_DELIMITER));
-    }
-
-    private LottoNumbers convertToLottoNumbers() {
-        List<Integer> numberList = Arrays.stream(numbers.split(NUMBER_DELIMITER))
-                .map(Integer::parseInt)
-                .toList();
-        return LottoNumbers.from(numberList);
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof WinningNumber that)) {
-            return false;
-        }
-        return Objects.equals(roundId, that.roundId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(roundId);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(roundId);
+  }
 }

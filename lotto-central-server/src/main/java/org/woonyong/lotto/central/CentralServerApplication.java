@@ -11,7 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableJpaRepositories("org.woonyong.lotto.central.repository")
 @EntityScan("org.woonyong.lotto.central.entity")
 public class CentralServerApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(CentralServerApplication.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(CentralServerApplication.class, args);
+  }
 }

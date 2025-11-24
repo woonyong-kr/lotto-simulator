@@ -15,36 +15,32 @@ import org.woonyong.lotto.pos.terminal.service.TerminalInitializer;
 @RestController
 @RequestMapping("/api/owner")
 public class OwnerController {
-    private static final String ERROR_ALREADY_ASSIGNED = "ALREADY_ASSIGNED";
-    private static final String ERROR_ALREADY_ASSIGNED_MESSAGE = "소유자가 이미 존재합니다";
+  private static final String ERROR_ALREADY_ASSIGNED = "ALREADY_ASSIGNED";
+  private static final String ERROR_ALREADY_ASSIGNED_MESSAGE = "소유자가 이미 존재합니다";
 
-    private final OwnerManager ownerManager;
-    private final TerminalInitializer terminalInitializer;
+  private final OwnerManager ownerManager;
+  private final TerminalInitializer terminalInitializer;
 
-    public OwnerController(final OwnerManager ownerManager,
-                          final TerminalInitializer terminalInitializer) {
-        this.ownerManager = ownerManager;
-        this.terminalInitializer = terminalInitializer;
+  public OwnerController(
+      final OwnerManager ownerManager, final TerminalInitializer terminalInitializer) {
+    this.ownerManager = ownerManager;
+    this.terminalInitializer = terminalInitializer;
+  }
+
+  @PostMapping
+  public ResponseEntity<ApiResponse<OwnerResponse>> assignOwner(
+      @RequestBody final AssignOwnerRequest request) {
+
+    if (ownerManager.hasOwner()) {
+      return ResponseEntity.status(HttpStatus.CONFLICT)
+          .body(ApiResponse.error(ERROR_ALREADY_ASSIGNED, ERROR_ALREADY_ASSIGNED_MESSAGE));
     }
 
-    @PostMapping
-    public ResponseEntity<ApiResponse<OwnerResponse>> assignOwner(
-            @RequestBody final AssignOwnerRequest request) {
+    ownerManager.assignOwner(request.getBotUid(), request.getPosUid(), request.getBotClientUrl());
 
-        if (ownerManager.hasOwner()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(ApiResponse.error(ERROR_ALREADY_ASSIGNED, ERROR_ALREADY_ASSIGNED_MESSAGE));
-        }
+    OwnerResponse response =
+        new OwnerResponse(terminalInitializer.getTerminalId(), ownerManager.getAssignedAt());
 
-        ownerManager.assignOwner(request.getBotUid(), request.getPosUid(), request.getBotClientUrl());
-
-        OwnerResponse response = new OwnerResponse(
-                terminalInitializer.getTerminalId(),
-                ownerManager.getAssignedAt()
-        );
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(response));
-    }
-
+    return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
+  }
 }

@@ -1,59 +1,49 @@
 package org.woonyong.lotto.bot.service;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import static org.woonyong.lotto.core.constant.JsonKeyConstants.*;
+import static org.woonyong.lotto.core.constant.ErrorMessageConstants.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.woonyong.lotto.bot.config.BotClientConfig;
 
 @Service
 public class DashboardReportService {
 
-    @Value("${dashboard.server.url:http://localhost:8500}")
-    private String dashboardUrl;
+  private static final String BOT_STATUS_ENDPOINT = "/api/dashboard/bot-status";
+  private static final String POS_STATUS_ENDPOINT = "/api/dashboard/pos-status";
 
-    private final WebClient webClient = WebClient.builder().build();
+  private final WebClient webClient = WebClient.builder().build();
+  private final String dashboardUrl;
 
-    public void reportBotStatus(String botId, boolean isActive, String responseTime) {
-        try {
-            Map<String, Object> botStatus = new HashMap<>();
-            botStatus.put("botId", botId);
-            botStatus.put("isActive", isActive);
-            botStatus.put("responseTime", responseTime);
-            botStatus.put("timestamp", System.currentTimeMillis());
+  public DashboardReportService(final BotClientConfig botClientConfig) {
+    this.dashboardUrl = botClientConfig.getDashboardServerUrl();
+  }
 
-            String url = dashboardUrl + "/api/dashboard/bot-status";
-            webClient.post()
-                    .uri(url)
-                    .bodyValue(botStatus)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .subscribe();
-        } catch (Exception e) {
-            // 대시보드 연결 실패는 조용히 무시 (로그만 출력)
-            System.err.println("대시보드 상태 리포트 실패: " + e.getMessage());
-        }
+  public void reportBotStatus(String botId, boolean isActive, String responseTime) {
+    Map<String, Object> botStatus = new HashMap<>();
+    botStatus.put(BOT_UID, botId);
+    botStatus.put(IS_ACTIVE, isActive);
+    botStatus.put(RESPONSE_TIME, responseTime);
+    sendToDashboard(BOT_STATUS_ENDPOINT, botStatus);
+  }
+
+  public void reportPosStatus(String botId, Map<String, Object> posStatuses) {
+    Map<String, Object> report = new HashMap<>();
+    report.put(BOT_UID, botId);
+    report.putAll(posStatuses);
+    sendToDashboard(POS_STATUS_ENDPOINT, report);
+  }
+
+  private void sendToDashboard(String endpoint, Map<String, Object> data) {
+    try {
+      data.put(TIMESTAMP, System.currentTimeMillis());
+      String url = dashboardUrl + endpoint;
+      webClient.post().uri(url).bodyValue(data).retrieve().bodyToMono(String.class).subscribe();
+    } catch (Exception e) {
+      System.err.println(DASHBOARD_REPORT_FAILURE_MESSAGE + e.getMessage());
     }
-
-    public void reportPosStatus(String botId, Map<String, Object> posStatuses) {
-        try {
-            Map<String, Object> report = new HashMap<>();
-            report.put("botId", botId);
-            // posStatuses 안에 이미 "positions" 키가 있으므로 그대로 넣음
-            report.putAll(posStatuses);
-            report.put("timestamp", System.currentTimeMillis());
-
-            String url = dashboardUrl + "/api/dashboard/pos-status";
-            webClient.post()
-                    .uri(url)
-                    .bodyValue(report)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .subscribe();
-        } catch (Exception e) {
-            System.err.println("대시보드 POS 상태 리포트 실패: " + e.getMessage());
-        }
-    }
+  }
 }

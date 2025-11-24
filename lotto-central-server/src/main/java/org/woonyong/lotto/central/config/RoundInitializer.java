@@ -8,12 +8,12 @@ import org.woonyong.lotto.central.service.RoundService;
 @Configuration
 public class RoundInitializer {
 
-    @Bean
-    public CommandLineRunner initializeRound(final RoundService roundService) {
-        return args -> {
-            if (roundService.getCurrentRound().isEmpty()) {
-                roundService.startFirstRound();
-            }
-        };
-    }
+  @Bean
+  public CommandLineRunner initializeRound(final RoundService roundService) {
+    return args -> {
+      if (roundService.getCurrentRound().isEmpty()) {
+        roundService.startFirstRound();
+      }
+    };
+  }
 }

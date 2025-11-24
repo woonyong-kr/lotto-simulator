@@ -10,44 +10,44 @@ import org.woonyong.lotto.central.repository.WinningNumberRepository;
 import org.woonyong.lotto.core.domain.LottoNumber;
 import org.woonyong.lotto.core.domain.LottoNumbers;
 import org.woonyong.lotto.core.domain.WinningNumbers;
-import org.woonyong.lotto.core.util.LottoNumberGenerator;
-
-import java.util.List;
 
 @Service
 public class DrawingService {
-    private static final String ERROR_ROUND_NOT_FOUND = "회차를 찾을 수 없습니다";
+  private static final String ERROR_ROUND_NOT_FOUND = "회차를 찾을 수 없습니다";
 
-    private final RoundRepository roundRepository;
-    private final WinningNumberRepository winningNumberRepository;
-    private final TicketService ticketService;
+  private final RoundRepository roundRepository;
+  private final WinningNumberRepository winningNumberRepository;
+  private final TicketService ticketService;
 
-    public DrawingService(final RoundRepository roundRepository,
-                          final WinningNumberRepository winningNumberRepository,
-                          final TicketService ticketService) {
-        this.roundRepository = roundRepository;
-        this.winningNumberRepository = winningNumberRepository;
-        this.ticketService = ticketService;
-    }
+  public DrawingService(
+      final RoundRepository roundRepository,
+      final WinningNumberRepository winningNumberRepository,
+      final TicketService ticketService) {
+    this.roundRepository = roundRepository;
+    this.winningNumberRepository = winningNumberRepository;
+    this.ticketService = ticketService;
+  }
 
-    @Async
-    @Transactional
-    public void startDrawingAsync(final Long roundId) {
-        WinningNumbers winningNumbers = generateWinningNumbers();
-        WinningNumber winningNumber = WinningNumber.create(roundId, winningNumbers);
-        winningNumberRepository.save(winningNumber);
+  @Async
+  @Transactional
+  public void startDrawingAsync(final Long roundId) {
+    WinningNumbers winningNumbers = generateWinningNumbers();
+    WinningNumber winningNumber = WinningNumber.create(roundId, winningNumbers);
+    winningNumberRepository.save(winningNumber);
 
-        ticketService.checkWinning(roundId);
+    ticketService.checkWinning(roundId);
 
-        Round round = roundRepository.findById(roundId)
-                .orElseThrow(() -> new IllegalArgumentException(ERROR_ROUND_NOT_FOUND));
-        round.completeDrawing();
-        roundRepository.save(round);
-    }
+    Round round =
+        roundRepository
+            .findById(roundId)
+            .orElseThrow(() -> new IllegalArgumentException(ERROR_ROUND_NOT_FOUND));
+    round.completeDrawing();
+    roundRepository.save(round);
+  }
 
-    private WinningNumbers generateWinningNumbers() {
-        LottoNumbers mainNumbers = LottoNumbers.generateRandom();
-        LottoNumber bonusNumber = LottoNumber.generateRandom(mainNumbers);
-        return WinningNumbers.of(mainNumbers, bonusNumber);
-    }
+  private WinningNumbers generateWinningNumbers() {
+    LottoNumbers mainNumbers = LottoNumbers.generateRandom();
+    LottoNumber bonusNumber = LottoNumber.generateRandom(mainNumbers);
+    return WinningNumbers.of(mainNumbers, bonusNumber);
+  }
 }

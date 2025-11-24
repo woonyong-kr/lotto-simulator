@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/bot")
 public class HealthController {
 
-    @GetMapping("/health")
-    public String health() {
-        return "Bot Client is running";
-    }
+  @GetMapping("/health")
+  public String health() {
+    return "Bot Client is running";
+  }
 }
