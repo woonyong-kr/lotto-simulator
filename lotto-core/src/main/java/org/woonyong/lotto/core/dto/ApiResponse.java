@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class ApiResponse<T> {
+
     private final boolean success;
     private final T data;
     private final ErrorResponse error;
@@ -17,8 +18,8 @@ public class ApiResponse<T> {
                 .build();
     }
 
-    public static ApiResponse<Void> error(final String code, final String message) {
-        return ApiResponse.<Void>builder()
+    public static <T> ApiResponse<T> error(final String code, final String message) {
+        return ApiResponse.<T>builder()
                 .success(false)
                 .error(ErrorResponse.of(code, message))
                 .build();

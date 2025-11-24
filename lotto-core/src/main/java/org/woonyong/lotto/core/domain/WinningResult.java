@@ -2,7 +2,10 @@ package org.woonyong.lotto.core.domain;
 
 import java.util.Objects;
 
+import static org.woonyong.lotto.core.constant.LottoConstants.*;
+
 public final class WinningResult {
+
     private final WinningRank rank;
     private final int prizeMoney;
 
@@ -12,7 +15,7 @@ public final class WinningResult {
 
     private WinningResult(final WinningRank rank) {
         this.rank = rank;
-        this.prizeMoney = rank.getPrizeMoney();
+        this.prizeMoney = calculatePrize(rank);
     }
 
     public static WinningResult miss() {
@@ -29,6 +32,16 @@ public final class WinningResult {
 
     public boolean isWinner() {
         return rank != WinningRank.MISS;
+    }
+
+    private static int calculatePrize(final WinningRank rank) {
+        if (rank == WinningRank.FOURTH) {
+            return FOURTH_PRIZE;
+        }
+        if (rank == WinningRank.FIFTH) {
+            return FIFTH_PRIZE;
+        }
+        return (int) UNDETERMINED_PRIZE;
     }
 
     @Override
