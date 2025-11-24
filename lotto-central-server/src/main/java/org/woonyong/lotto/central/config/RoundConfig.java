@@ -9,28 +9,37 @@ public class RoundConfig {
     private int openDuration;
     private int closedDuration;
     private int checkInterval;
-
-    public void setOpenDuration(int openDuration) {
-        this.openDuration = openDuration;
-    }
-
-    public void setClosedDuration(int closedDuration) {
-        this.closedDuration = closedDuration;
-    }
-
-    public void setCheckInterval(int checkInterval) {
-        this.checkInterval = checkInterval;
-    }
+    private int sseInterval;
 
     public int getOpenDuration() {
         return openDuration;
+    }
+
+    public void setOpenDuration(final int openDuration) {
+        this.openDuration = openDuration;
     }
 
     public int getClosedDuration() {
         return closedDuration;
     }
 
+    public void setClosedDuration(final int closedDuration) {
+        this.closedDuration = closedDuration;
+    }
+
     public int getCheckInterval() {
         return checkInterval;
+    }
+
+    public void setCheckInterval(final int checkInterval) {
+        this.checkInterval = checkInterval;
+    }
+
+    public int getSseInterval() {
+        return sseInterval;
+    }
+
+    public void setSseInterval(final int sseInterval) {
+        this.sseInterval = sseInterval;
     }
 }
