@@ -37,10 +37,10 @@ public class RoundService {
         return roundRepository.save(round);
     }
 
-    @Scheduled(fixedRateString = "#{@roundConfig.checkInterval}")
+    @Scheduled(fixedRateString = "#{@roundConfig.getCheckInterval()}")
     @Transactional
     public void checkAndTransition() {
-        Optional<Round> currentOpt = getCurrentRound();
+        Optional<Round> currentOpt = getCurrentRoundForUpdate();
         if (currentOpt.isEmpty()) {
             return;
         }
@@ -56,6 +56,16 @@ public class RoundService {
         if (shouldTransitionToOpen(current, now)) {
             transitionToOpen(current, now);
         }
+    }
+
+    private Optional<Round> getCurrentRoundForUpdate() {
+        Optional<Round> currentOpt = roundRepository.findTopByOrderByIdDesc();
+        if (currentOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Long currentId = currentOpt.get().getId();
+        return roundRepository.findByIdForUpdate(currentId);
     }
 
     @Transactional
@@ -83,7 +93,6 @@ public class RoundService {
         recalculateClosedEndTime(current, newDuration);
     }
 
-
     public Optional<Round> getCurrentRound() {
         return roundRepository.findTopByOrderByIdDesc();
     }
@@ -104,8 +113,8 @@ public class RoundService {
     }
 
     private void transitionToClose(final Round round, final LocalDateTime now) {
-        round.close();
         updateClosedEndTime(round, now);
+        round.close();
         roundRepository.save(round);
         drawingService.startDrawingAsync(round.getId());
     }

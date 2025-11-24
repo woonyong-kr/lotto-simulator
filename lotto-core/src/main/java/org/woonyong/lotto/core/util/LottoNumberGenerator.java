@@ -48,8 +48,7 @@ public final class LottoNumberGenerator {
     }
 
     private static List<Integer> generateFromAvailableNumbers(final List<Integer> availableNumbers, final int count) {
-        long seed = createSeed();
-        Collections.shuffle(availableNumbers, new Random(seed));
+        Collections.shuffle(availableNumbers, new Random(createSeed()));
         return availableNumbers.stream()
                 .limit(count)
                 .sorted()
@@ -57,11 +56,7 @@ public final class LottoNumberGenerator {
     }
 
     private static long createSeed() {
-        return createSeed(System.nanoTime());
-    }
-
-    private static long createSeed(final long previousSeed) {
-        return createSeed(createSeed(), previousSeed);
+        return createSeed(System.nanoTime(), System.currentTimeMillis());
     }
 
     private static long createSeed(final long seed, final long salt) {

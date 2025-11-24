@@ -1,6 +1,7 @@
 package org.woonyong.lotto.central.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.woonyong.lotto.central.dto.response.RoundResponse;
 import org.woonyong.lotto.central.entity.Round;
@@ -19,28 +20,21 @@ public class RoundController {
     }
 
     @GetMapping("/current")
-    public ApiResponse<RoundResponse> getCurrentRound() {
+    public ResponseEntity<ApiResponse<RoundResponse>> getCurrentRound() {
         Round round = roundService.getCurrentRound()
                 .orElseThrow(() -> new IllegalStateException(ERROR_NO_CURRENT_ROUND));
-        return ApiResponse.success(RoundResponse.from(round));
-    }
-
-    @PostMapping("/start")
-    @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<RoundResponse> startFirstRound() {
-        Round round = roundService.startFirstRound();
-        return ApiResponse.success(RoundResponse.from(round));
+        return ResponseEntity.ok(ApiResponse.success(RoundResponse.from(round)));
     }
 
     @PutMapping("/duration/open")
-    public ApiResponse<Void> updateOpenDuration(@RequestParam final int duration) {
+    public ResponseEntity<ApiResponse<Void>> updateOpenDuration(@RequestParam final int duration) {
         roundService.updateOpenDuration(duration);
-        return ApiResponse.success(null);
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 
     @PutMapping("/duration/closed")
-    public ApiResponse<Void> updateClosedDuration(@RequestParam final int duration) {
+    public ResponseEntity<ApiResponse<Void>> updateClosedDuration(@RequestParam final int duration) {
         roundService.updateClosedDuration(duration);
-        return ApiResponse.success(null);
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 }

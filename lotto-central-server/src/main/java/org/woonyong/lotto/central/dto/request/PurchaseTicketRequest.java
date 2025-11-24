@@ -16,10 +16,9 @@ public class PurchaseTicketRequest {
     @NotNull(message = "티켓 타입은 필수입니다")
     private String type;
 
-    @Size(min = LOTTO_NUMBERS_COUNT, max = LOTTO_NUMBERS_COUNT, message = "번호는 6개여야 합니다")
     private List<Integer> numbers;
 
-    protected PurchaseTicketRequest() {
+    public PurchaseTicketRequest() {
     }
 
     public PurchaseTicketRequest(final Long roundId, final String type, final List<Integer> numbers) {
@@ -32,11 +31,23 @@ public class PurchaseTicketRequest {
         return roundId;
     }
 
+    public void setRoundId(final Long roundId) {
+        this.roundId = roundId;
+    }
+
     public String getType() {
         return type;
     }
 
+    public void setType(final String type) {
+        this.type = type;
+    }
+
     public List<Integer> getNumbers() {
         return numbers;
+    }
+
+    public void setNumbers(final List<Integer> numbers) {
+        this.numbers = numbers;
     }
 }
