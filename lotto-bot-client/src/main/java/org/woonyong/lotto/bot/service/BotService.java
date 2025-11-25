@@ -16,6 +16,13 @@ import org.woonyong.lotto.bot.manager.BotInstanceManager;
 @Service
 public class BotService {
   private static final Logger log = LoggerFactory.getLogger(BotService.class);
+  private static final String LOG_BOT_MAX_CAPACITY = "봇 최대 용량 초과";
+  private static final String LOG_TERMINAL_ALLOCATION_SUCCESS = "터미널 할당 성공: botUid={}, posUid={}";
+  private static final String LOG_TERMINAL_ALLOCATION_FAILURE = "터미널 할당 실패 (시도 {}/{}): posUid={}";
+  private static final String LOG_TERMINAL_ALLOCATION_FINAL_FAILURE = "터미널 할당 최종 실패: posUid={}";
+  private static final String LOG_BOT_INSTANCE_CREATED = "봇 인스턴스 생성 완료: {}";
+  private static final String LOG_POS_DEACTIVATION_FAILURE = "POS 비활성화 실패, 재시도 대기: posUid={}";
+  private static final String LOG_POS_DEACTIVATION_SUCCESS = "POS 비활성화 성공: posUid={}";
 
   private final BotInstanceManager botInstanceManager;
   private final CentralServerClient centralServerClient;
@@ -35,7 +42,7 @@ public class BotService {
 
   public String createBot() {
     if (!botInstanceManager.hasCapacity()) {
-      log.warn("봇 최대 용량 초과");
+      log.warn(LOG_BOT_MAX_CAPACITY);
       return null;
     }
     BotDataResponse botData = centralServerClient.createBot();
@@ -80,7 +87,7 @@ public class BotService {
         botInstanceManager.createInstance(
             botData.getBotUid(), botData.getPurchaseIntervalMs(), botData.getTicketsPerPurchase());
     allocateTerminalsForBot(instance, botData);
-    log.info("봇 인스턴스 생성 완료: {}", botData.getBotUid());
+    log.info(LOG_BOT_INSTANCE_CREATED, botData.getBotUid());
     return botData.getBotUid();
   }
 
@@ -103,7 +110,7 @@ public class BotService {
       logAllocationFailure(attempt, maxRetry, posUid);
       sleepQuietly(config.getPosReallocationRetryMs());
     }
-    log.error("터미널 할당 최종 실패: posUid={}", posUid);
+    log.error(LOG_TERMINAL_ALLOCATION_FINAL_FAILURE, posUid);
     return false;
   }
 
@@ -113,21 +120,21 @@ public class BotService {
     if (response == null || !response.isSuccess()) {
       return false;
     }
-    instance.addPosConnection(posUid, response.getAddress());
-    log.debug("터미널 할당 성공: botUid={}, posUid={}", botUid, posUid);
+    instance.addPosConnection(posUid, response.getTerminalId(), response.getAddress());
+    log.debug(LOG_TERMINAL_ALLOCATION_SUCCESS, botUid, posUid);
     return true;
   }
 
   private void logAllocationFailure(final int attempt, final int maxRetry, final String posUid) {
-    log.warn("터미널 할당 실패 (시도 {}/{}): posUid={}", attempt, maxRetry, posUid);
+    log.warn(LOG_TERMINAL_ALLOCATION_FAILURE, attempt, maxRetry, posUid);
   }
 
   private void deactivatePosUntilSuccess(final String posUid) {
     while (!tryDeactivatePos(posUid)) {
-      log.warn("POS 비활성화 실패, 재시도 대기: posUid={}", posUid);
+      log.warn(LOG_POS_DEACTIVATION_FAILURE, posUid);
       sleepQuietly(config.getPosReallocationRetryMs());
     }
-    log.info("POS 비활성화 성공: posUid={}", posUid);
+    log.info(LOG_POS_DEACTIVATION_SUCCESS, posUid);
   }
 
   private boolean tryDeactivatePos(final String posUid) {

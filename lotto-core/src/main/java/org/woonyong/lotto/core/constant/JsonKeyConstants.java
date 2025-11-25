@@ -18,6 +18,7 @@ public final class JsonKeyConstants {
   public static final String BOT_UID = "botUid";
   public static final String BOT_CLIENT_URL = "botClientUrl";
   public static final String SUCCESS = "success";
+  public static final String DATA = "data";
 
   private JsonKeyConstants() {}
 }
