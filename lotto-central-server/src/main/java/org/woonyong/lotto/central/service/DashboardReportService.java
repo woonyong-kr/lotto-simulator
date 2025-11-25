@@ -3,6 +3,7 @@ package org.woonyong.lotto.central.service;
 import static org.woonyong.lotto.core.constant.JsonKeyConstants.*;
 import static org.woonyong.lotto.core.constant.ErrorMessageConstants.*;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.stereotype.Service;
@@ -17,11 +18,16 @@ public class DashboardReportService {
   private static final String TICKET_SALES_ENDPOINT = "/api/dashboard/ticket-sales";
   private static final String REPORT_SOURCE = "central-server";
 
-  private final WebClient webClient = WebClient.builder().build();
+  private final WebClient webClient;
   private final String dashboardUrl;
+  private final Duration readTimeout;
 
-  public DashboardReportService(final CentralServerConfig centralServerConfig) {
+  public DashboardReportService(
+      final WebClient webClient,
+      final CentralServerConfig centralServerConfig) {
+    this.webClient = webClient;
     this.dashboardUrl = centralServerConfig.getDashboardUrl();
+    this.readTimeout = Duration.ofMillis(centralServerConfig.getReadTimeout());
   }
 
   public void reportRoundUpdate(Map<String, Object> roundData) {
@@ -49,7 +55,14 @@ public class DashboardReportService {
     try {
       data.put(TIMESTAMP, System.currentTimeMillis());
       String url = dashboardUrl + endpoint;
-      webClient.post().uri(url).bodyValue(data).retrieve().bodyToMono(String.class).subscribe();
+      webClient
+          .post()
+          .uri(url)
+          .bodyValue(data)
+          .retrieve()
+          .bodyToMono(String.class)
+          .timeout(readTimeout)
+          .block();
     } catch (Exception e) {
       System.err.println(DASHBOARD_REPORT_FAILURE_MESSAGE + e.getMessage());
     }

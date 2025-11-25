@@ -35,7 +35,7 @@ public class OwnerValidationClient {
               POS_UID, posUid,
               TERMINAL_ID, terminalId);
 
-      Map<String, Object> response =
+      Map<String, Object> apiResponse =
           webClient
               .post()
               .uri(botClientUrl + HEALTH_OWNER_ENDPOINT)
@@ -45,7 +45,12 @@ public class OwnerValidationClient {
               .timeout(Duration.ofMillis(config.getReadTimeout()))
               .block();
 
-      return response != null && Boolean.TRUE.equals(response.get(VALID));
+      if (apiResponse == null || !Boolean.TRUE.equals(apiResponse.get(SUCCESS))) {
+        return false;
+      }
+
+      Map<String, Object> data = (Map<String, Object>) apiResponse.get(DATA);
+      return data != null && Boolean.TRUE.equals(data.get(VALID));
 
     } catch (Exception e) {
       throw PosTerminalException.of(

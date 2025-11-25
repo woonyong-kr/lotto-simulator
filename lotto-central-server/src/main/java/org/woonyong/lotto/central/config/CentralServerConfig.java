@@ -12,4 +12,5 @@ import org.springframework.context.annotation.Configuration;
 public class CentralServerConfig {
   private String dashboardUrl;
   private int defaultPosCount;
+  private int readTimeout;
 }

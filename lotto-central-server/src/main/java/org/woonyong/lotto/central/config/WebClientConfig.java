@@ -1,4 +1,4 @@
-package org.woonyong.lotto.pos.terminal.config;
+package org.woonyong.lotto.central.config;
 
 import static org.woonyong.lotto.core.constant.WebClientConstants.*;
 
@@ -10,7 +10,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class WebClientConfig {
 
   @Bean
-  public WebClient webClient(final PosTerminalConfig config) {
+  public WebClient webClient() {
     return WebClient.builder()
         .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(MAX_IN_MEMORY_SIZE))
         .build();

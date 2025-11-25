@@ -1,12 +1,14 @@
 package org.woonyong.lotto.bot.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.woonyong.lotto.bot.dto.request.OwnerValidationRequest;
 import org.woonyong.lotto.bot.dto.response.OwnerValidationResponse;
 import org.woonyong.lotto.bot.manager.BotInstanceManager;
+import org.woonyong.lotto.core.dto.ApiResponse;
 
 @RestController
 @RequestMapping("/api/health")
@@ -19,12 +21,13 @@ public class OwnerHealthController {
     this.botInstanceManager = botInstanceManager;
   }
 
-  @GetMapping("/owner")
-  public ResponseEntity<OwnerValidationResponse> validateOwner(@RequestParam final String botUid) {
-    boolean isRunning = botInstanceManager.isInstanceRunning(botUid);
+  @PostMapping("/owner")
+  public ResponseEntity<ApiResponse<OwnerValidationResponse>> validateOwner(
+      @RequestBody final OwnerValidationRequest request) {
+    boolean isRunning = botInstanceManager.isInstanceRunning(request.getOwnerBotUid());
     if (!isRunning) {
-      return ResponseEntity.ok(OwnerValidationResponse.invalid(ERROR_BOT_NOT_FOUND));
+      return ResponseEntity.ok(ApiResponse.success(OwnerValidationResponse.invalid(ERROR_BOT_NOT_FOUND)));
     }
-    return ResponseEntity.ok(OwnerValidationResponse.valid());
+    return ResponseEntity.ok(ApiResponse.success(OwnerValidationResponse.valid()));
   }
 }

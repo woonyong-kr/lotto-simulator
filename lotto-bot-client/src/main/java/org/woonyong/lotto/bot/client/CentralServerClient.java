@@ -1,20 +1,15 @@
 package org.woonyong.lotto.bot.client;
 
-import static org.woonyong.lotto.core.constant.JsonKeyConstants.ACTIVE;
+import static org.woonyong.lotto.core.constant.JsonKeyConstants.*;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.woonyong.lotto.bot.config.BotClientConfig;
 import org.woonyong.lotto.bot.dto.response.BotDataResponse;
 import org.woonyong.lotto.core.dto.ApiResponse;
@@ -28,20 +23,27 @@ public class CentralServerClient {
   private static final String POS_ENDPOINT = "/api/pos/";
   private static final String STATUS_SUFFIX = "/status";
 
-  private final RestTemplate restTemplate;
+  private final WebClient webClient;
   private final String centralServerUrl;
+  private final Duration readTimeout;
 
   public CentralServerClient(
-      final RestTemplate restTemplate, final BotClientConfig botClientConfig) {
-    this.restTemplate = restTemplate;
+      final WebClient webClient, final BotClientConfig botClientConfig) {
+    this.webClient = webClient;
     this.centralServerUrl = botClientConfig.getCentralServerUrl();
+    this.readTimeout = Duration.ofMillis(botClientConfig.getReadTimeout());
   }
 
   public List<BotDataResponse> getActiveBots() {
     String url = centralServerUrl + BOTS_ENDPOINT + ACTIVE_BOTS_QUERY;
     try {
-      ResponseEntity<ApiResponse<List<BotDataResponse>>> response =
-          restTemplate.exchange(url, HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
+      ApiResponse<List<BotDataResponse>> response = webClient
+          .get()
+          .uri(url)
+          .retrieve()
+          .bodyToMono(ApiResponse.class)
+          .timeout(readTimeout)
+          .block();
       return extractData(response);
     } catch (Exception e) {
       log.error("활성 봇 조회 실패: {}", e.getMessage());
@@ -52,8 +54,13 @@ public class CentralServerClient {
   public BotDataResponse createBot() {
     String url = centralServerUrl + BOTS_ENDPOINT;
     try {
-      ResponseEntity<ApiResponse<BotDataResponse>> response =
-          restTemplate.exchange(url, HttpMethod.POST, null, new ParameterizedTypeReference<>() {});
+      ApiResponse<BotDataResponse> response = webClient
+          .post()
+          .uri(url)
+          .retrieve()
+          .bodyToMono(ApiResponse.class)
+          .timeout(readTimeout)
+          .block();
       return extractSingleData(response);
     } catch (Exception e) {
       log.error("봇 생성 실패: {}", e.getMessage());
@@ -64,7 +71,13 @@ public class CentralServerClient {
   public boolean deactivateBot(final String botUid) {
     String url = centralServerUrl + BOTS_ENDPOINT + "/" + botUid + DEACTIVATE_SUFFIX;
     try {
-      restTemplate.put(url, null);
+      webClient
+          .put()
+          .uri(url)
+          .retrieve()
+          .bodyToMono(Void.class)
+          .timeout(readTimeout)
+          .block();
       return true;
     } catch (Exception e) {
       log.error("봇 비활성화 실패: {} - {}", botUid, e.getMessage());
@@ -75,8 +88,14 @@ public class CentralServerClient {
   public boolean deactivatePos(final String posUid) {
     String url = centralServerUrl + POS_ENDPOINT + posUid + STATUS_SUFFIX;
     try {
-      HttpEntity<Map<String, Boolean>> entity = createDeactivateRequest();
-      restTemplate.exchange(url, HttpMethod.PUT, entity, Void.class);
+      webClient
+          .put()
+          .uri(url)
+          .bodyValue(Map.of(ACTIVE, false))
+          .retrieve()
+          .bodyToMono(Void.class)
+          .timeout(readTimeout)
+          .block();
       return true;
     } catch (Exception e) {
       log.error("POS 비활성화 실패: {} - {}", posUid, e.getMessage());
@@ -84,23 +103,17 @@ public class CentralServerClient {
     }
   }
 
-  private HttpEntity<Map<String, Boolean>> createDeactivateRequest() {
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-    return new HttpEntity<>(Map.of(ACTIVE, false), headers);
-  }
-
-  private <T> T extractSingleData(final ResponseEntity<ApiResponse<T>> response) {
-    if (response.getBody() == null) {
+  private <T> T extractSingleData(final ApiResponse<T> response) {
+    if (response == null) {
       return null;
     }
-    return response.getBody().getData();
+    return response.getData();
   }
 
-  private <T> List<T> extractData(final ResponseEntity<ApiResponse<List<T>>> response) {
-    if (response.getBody() == null || response.getBody().getData() == null) {
+  private <T> List<T> extractData(final ApiResponse<List<T>> response) {
+    if (response == null || response.getData() == null) {
       return Collections.emptyList();
     }
-    return response.getBody().getData();
+    return response.getData();
   }
 }
