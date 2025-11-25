@@ -1,84 +1,80 @@
 # lotto-central-server
 
-시스템의 중심 서버입니다.
+실제 로또 서비스의 본사 시스템에 해당하는 중앙 서버입니다. 회차를 열고 닫고, POS에서 올라오는 티켓 발행 요청을 검증하고, 추첨을 수행합니다. 다른 모든 모듈이 이 서버의 REST API에 의존하며, PostgreSQL을 사용해 모든 데이터를 영구 저장합니다.
 
-**포트:** 8100  
-**DB:** PostgreSQL
+## 구현된 기능
 
-## 역할
+스케줄러가 환경변수로 설정된 간격마다 가장 최신 회차를 확인하고, OPEN 상태 회차는 설정된 시간이 지나면 CLOSED로 전환합니다. 회차가 종료되면 자동으로 당첨 번호를 추첨하고 모든 티켓의 당첨 여부를 계산합니다. 새 회차는 이전 회차가 CLOSED 상태가 된 후 자동으로 생성됩니다.
 
-회차와 추첨을 관리하고, 봇과 POS를 생성합니다.
-티켓 구매를 처리하고 당첨 결과를 계산합니다.
+티켓 발행은 수동/자동 타입을 지원하며, Pessimistic Lock을 사용해 동시에 여러 요청이 들어와도 회차 상태를 안전하게 확인합니다. 봇과 POS는 중앙 서버에 등록되어 관리되며, 봇 생성 시 자동으로 설정된 개수만큼 POS를 할당합니다. SSE 엔드포인트는 최근 회차 통계를 주기적으로 클라이언트에 전송합니다.
 
----
+## 주요 API
 
-## 구현 항목
+| 리소스 | 메서드 | 경로 | 설명 |
+| --- | --- | --- | --- |
+| Round | GET | `/api/rounds/current` | 최신 회차 조회 |
+| Round | GET | `/api/rounds/recent` | 최근 회차 목록 (기본 5개) |
+| Round | PUT | `/api/rounds/duration/open` | OPEN 구간 길이 변경 |
+| Round | PUT | `/api/rounds/duration/closed` | CLOSED 구간 길이 변경 |
+| Ticket | POST | `/api/tickets` | 티켓 발행 |
+| Ticket | GET | `/api/tickets/{ticketNumber}` | 티켓 상세 조회 |
+| Bot | POST | `/api/bots` | 봇 생성 및 POS 자동 할당 |
+| Bot | GET | `/api/bots/{botUid}` | 봇 단건 조회 |
+| Bot | PUT | `/api/bots/{botUid}/config` | 구매 간격/티켓 수 조정 |
+| Bot | PUT | `/api/bots/{botUid}/deactivate` | 비활성화 처리 |
+| POS | POST | `/api/pos` | POS 생성 |
+| POS | PUT | `/api/pos/{posUid}/status` | 활성/비활성 전환 |
+| POS | GET | `/api/pos/{posUid}` | 단건 조회 |
+| SSE | GET | `/api/sse/rounds` | 회차 통계 스트리밍 |
 
-### 엔티티 설계
-- [x] 회차 정보와 상태 관리
-- [ ] 봇 메타데이터 관리
-- [ ] POS 정보 관리
-- [x] 티켓 구매 기록
-- [x] 엔티티 간 연관관계 설정
+## 데이터베이스
 
-### 회차 관리
-- [x] 회차 생성 및 조회
-- [x] 추첨 처리
-- [x] 상태 전환 로직
-- [x] 중복 추첨 방지
+PostgreSQL 16을 사용하며 5개 테이블로 구성됩니다.
 
-### 봇 관리
-- [ ] 봇 생성 시 POS 자동 생성
-- [ ] 트랜잭션으로 묶어서 처리
-- [ ] 활성화/비활성화 제어
-- [ ] 봇 조회 기능
+- **Round**: 회차 번호, 상태(OPEN/CLOSED), 시작/종료 시간
+- **Ticket**: 회차 ID, POS UID, 번호 문자열, 타입, 당첨 정보
+- **WinningNumber**: 회차별 당첨 번호 6개와 보너스 번호
+- **Bot**: 봇 UID, 할당된 POS 목록, 구매 설정, 활성 여부
+- **Pos**: POS UID, 판매/당첨 누계, 활성 여부
 
-### 티켓 관리
-- [x] 구매 요청 처리
-- [x] 회차 상태 검증
-- [x] POS 상태 검증
-- [x] 번호 유효성 검증
-- [x] 구매 이력 저장
+스키마는 `spring.jpa.hibernate.ddl-auto` 설정으로 관리하며, 환경변수로 create/update/validate를 선택할 수 있습니다.
 
-### 당첨 계산
-- [x] 추첨 후 자동 계산
-- [x] 등수 판정 로직
-- [x] 통계 집계
+## 환경 설정
 
-### API 설계
-- [x] 회차 생성/조회/추첨 엔드포인트
-- [ ] 봇 생성/조회 엔드포인트
-- [x] 티켓 구매/조회 엔드포인트
-- [ ] 통계 조회 엔드포인트
-- [ ] POS 비활성화 엔드포인트
+`.env` 파일에서 다음 값을 주입합니다.
 
----
+```env
+# 회차 관리
+LOTTO_ROUND_OPEN_DURATION=300
+LOTTO_ROUND_CLOSED_DURATION=60
+LOTTO_ROUND_CHECK_INTERVAL=10
 
-## 테스트
+# 데이터베이스
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=lotto
+DB_USER=lotto_user
+DB_PASSWORD=lotto_pass
 
-### 도메인 로직
-- [ ] 회차 생성 및 상태 전환
-- [ ] 재추첨 방지
-- [ ] 봇과 POS 동시 생성
-- [ ] 번호 검증
+# 봇 설정
+BOT_DEFAULT_POS_COUNT=3
 
-### 영속성
-- [ ] 엔티티 저장 및 조회
-- [ ] 연관관계 동작 확인
-- [ ] 트랜잭션 롤백
+# SSE
+SSE_UPDATE_INTERVAL=5000
+```
 
-### 비즈니스 로직
-- [ ] 회차 생성 플로우
-- [ ] 봇 생성 플로우
-- [ ] 티켓 구매 플로우
-- [ ] 추첨 및 당첨 계산 플로우
+## 한계 및 미구현 사항
 
-### API 통합
-- [ ] 각 엔드포인트 응답 확인
-- [ ] 예외 상황 처리
-- [ ] 상태 코드 검증
+추첨 로직에 `@Async`가 선언되어 있지만 `@EnableAsync`가 없어 실제로는 동기로 실행됩니다. POS 터미널이 전송하는 통계 API(`/api/pos-terminals/statistics`)는 아직 구현되지 않아 호출이 실패합니다. 관리자용 수동 추첨 API, 다중 티켓 구매, 상세 통계 집계 기능은 문서에만 존재합니다.
 
----
+## 실행
 
-봇 생성할 때 POS를 함께 만드는 것이 핵심입니다.
-티켓 구매는 회차와 POS 상태를 모두 확인해야 합니다.
+```bash
+# 로컬 실행
+./gradlew :lotto-central-server:bootRun
+
+# Docker Compose
+docker-compose up -d central-server
+```
+
+PostgreSQL이 먼저 실행되어 있어야 하며, 포트 8100에서 API를 제공합니다.

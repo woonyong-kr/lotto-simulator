@@ -1,73 +1,38 @@
 # lotto-core
 
-모든 모듈에서 공유하는 도메인 로직과 유틸리티입니다.
+여러 모듈을 설계하면서 공통 라이브러리로 사용하고자 만들었습니다. 중앙 서버, POS 터미널, 봇 클라이언트가 모두 동일한 로또 규칙을 공유해야 했기 때문에, 값 객체와 상수를 한 곳에 모아 관리합니다.
 
-## 역할
+## 제공 기능
 
-로또 시스템의 핵심 규칙을 정의하고, 공통으로 사용하는 값 객체와 응답 형식을 제공합니다.
+- **도메인 값 객체**
+    - `LottoNumber`, `LottoNumbers`: 입력 검증과 중복 검사, 랜덤 생성 헬퍼 제공
+    - `WinningNumbers`, `WinningRank`: 당첨 번호/순위 판정
+    - `TicketNumber`, `TicketStatus`, `TicketType`, `RoundStatus`
+- **DTO/에러**: `ApiResponse`, `ErrorResponse`, `LottoException` 기반 예외 계층
+- **상수/유틸리티**: `LottoConstants`, `FormatConstants`, `JsonKeyConstants`, `LottoNumberGenerator`
 
----
+## 사용 예시
 
-## 구현 항목
+```java
+// 랜덤 번호 6개 생성
+LottoNumbers autoNumbers = LottoNumbers.generateRandom();
 
-### 로또 번호 모델
-- [x] 1-45 범위 검증하는 값 객체
-- [x] 6개 번호를 묶는 일급 컬렉션
-- [x] 중복 방지 및 정렬 보장
-- [x] 불변 객체로 설계
+// 수동 번호로 티켓 생성 시 검증
+LottoNumbers manualNumbers = LottoNumbers.from(List.of(1, 2, 3, 4, 5, 6));
 
-### 당첨 판정
-- [x] 일치 개수로 등수 계산
-- [x] 보너스 번호 포함 여부 판단
-- [x] 당첨 금액 정보
+// 당첨 결과 판정
+WinningNumbers winning = WinningNumbers.of(
+        LottoNumbers.from(List.of(3, 11, 22, 33, 40, 45)),
+        LottoNumber.of(7)
+);
+WinningRank rank = winning.match(manualNumbers);
+```
 
-### 번호 생성
-- [x] 무작위 6개 번호 생성
-- [x] 중복 없이 자동 정렬
-- [x] 스레드 안전성 고려
+## 한계
 
-### 공통 응답 구조
-- [x] 성공/실패 구분 가능한 형식
-- [x] 제네릭 타입 지원
-- [x] 타임스탬프 포함
+- README에 언급되어 있던 단위 테스트는 아직 (미구현) 상태입니다. 모든 모듈에서 이 라이브러리를 신뢰하므로 추후 테스트 추가가 필요합니다.
+- 난수 생성기는 `java.util.Random`을 기반으로 하며 암호학적으로 강력하지 않습니다.
 
-### 예외 체계
-- [x] 비즈니스 예외 기본 클래스
-- [x] 도메인별 구체적 예외
-- [x] 에러 코드 관리
+## 빌드
 
-### 상수
-- [x] 로또 규칙 관련 상수
-- [x] 시스템 전역 상수
-
----
-
-## 테스트
-
-### 값 객체 검증
-- [ ] 정상 범위 생성
-- [ ] 경계값 처리
-- [ ] 잘못된 입력 예외
-- [ ] 동등성 비교
-
-### 일급 컬렉션
-- [ ] 개수 제한 확인
-- [ ] 중복 방지 확인
-- [ ] 정렬 유지 확인
-- [ ] 불변성 확인
-
-### 당첨 계산
-- [ ] 각 등수별 판정
-- [ ] 보너스 번호 조합
-- [ ] 경계값 케이스
-
-### 번호 생성
-- [ ] 개수 확인
-- [ ] 범위 확인
-- [ ] 중복 없음 확인
-- [ ] 반복 테스트
-
----
-
-이 모듈은 독립 실행되지 않으며 다른 모듈의 의존성입니다.
-모든 값 객체는 불변으로 만들고, 검증은 생성 시점에 처리합니다.
+이 모듈은 `java-library` 플러그인을 사용하며, 루트 `./gradlew :lotto-core:build`로만 컴파일됩니다. 다른 모듈에서 자동으로 의존성으로 포함됩니다.
