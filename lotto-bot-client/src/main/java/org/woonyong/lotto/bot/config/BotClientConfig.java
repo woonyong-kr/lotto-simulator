@@ -20,8 +20,10 @@ public class BotClientConfig {
   private int posReallocationRetryMs;
   private int posAllocationMaxRetry;
   private int dashboardReportIntervalMs;
+  private int readTimeout;
 
   private String centralServerUrl;
   private String posManagerUrl;
   private String dashboardServerUrl;
+  private String botClientUrl;
 }

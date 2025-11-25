@@ -16,6 +16,7 @@ bot:
   central-server-url: ${CENTRAL_SERVER_URL}
   pos-manager-url: ${POS_MANAGER_URL}
   dashboard-server-url: ${DASHBOARD_URL}
+  bot-client-url: ${BOT_CLIENT_URL}
 
 server:
   port: ${BOT_CLIENT_PORT}

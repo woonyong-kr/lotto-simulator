@@ -23,8 +23,8 @@ public class BotInstance {
     this.aggregatedResponseTimes = new ArrayList<>();
   }
 
-  public void addPosConnection(final String posUid, final String terminalAddress) {
-    PosTerminalConnection connection = new PosTerminalConnection(posUid, terminalAddress);
+  public void addPosConnection(final String posUid, final String terminalId, final String terminalAddress) {
+    PosTerminalConnection connection = new PosTerminalConnection(posUid, terminalId, terminalAddress);
     posConnections.put(posUid, connection);
   }
 
