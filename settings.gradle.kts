@@ -6,5 +6,6 @@ include(
     "lotto-pos-manager",
     "lotto-pos-terminal",
     "lotto-bot-client",
-    "lotto-dashboard"
+    "lotto-dashboard",
+    "behavior-core"
 )
